@@ -19,11 +19,16 @@ namespace qm95
             WriteLine("\tRegister");
         }
 
-        /// <summary>
-        /// TODO
-        /// </summary>
-        private static void Login()
+        private static Customer Login()
         {
+            Write("Enter email: ");
+            string email = ReadLine();
+            
+            Write("Enter password: ");
+            string password = ReadLine();
+
+            Customer customer = new Customer(email, password);
+            return customer.Login() ? customer : null;
         }
 
         private static string Register()
@@ -36,10 +41,10 @@ namespace qm95
             string email;
             while (true)
             {
-                Write("Email: ");
+                Write("Enter email: ");
                 email = ReadLine();
 
-                if (!Customer.IsValidEmail(email)) WriteLine("Invalid email, ty again.");
+                if (!Customer.IsValidEmail(email)) WriteLine("Email already exists, ty again.");
                 else break;
             }
 
@@ -91,7 +96,12 @@ namespace qm95
                     break;
 
                 case 2:
-                    Login();
+                    if (Login() is null)
+                    {
+                        WriteLine("Invalid email or password!");
+                        Environment.Exit(0);
+                    }
+
                     break;
 
                 default:
@@ -99,6 +109,8 @@ namespace qm95
                     Environment.Exit(0);
                     break;
             }
+
+            WriteLine("Login successful!");
         }
     }
 }

@@ -13,14 +13,26 @@ namespace qm95
         public string Email { get; private set; }
         public string Password { get; private set; }
         public string Salt { get; private set; }
+
         private static readonly string ConnectionString = "Data Source=db;Cache=Shared;";
+        private static readonly int Iterations = 10000;
+        private static readonly int Size = 32;
 
         public Customer(string name, string lastName, string email, string password)
         {
             Name = EditNameOrLastname(name);
             LastName = EditNameOrLastname(lastName);
             Email = email.TrimStart().TrimEnd();
-            GeneratePasswordHash(password);
+
+            byte[] salt = GenerateSalt();
+            Salt = Convert.ToBase64String(salt);
+            Password = Convert.ToBase64String(GenerateHash(password, salt));
+        }
+
+        public Customer(string email, string password)
+        {
+            Email = email;
+            Password = password;
         }
 
         private static string EditNameOrLastname(string s)
@@ -44,21 +56,19 @@ namespace qm95
                    password.Any(c => char.IsPunctuation(c));
         }
 
-        private void GeneratePasswordHash(string password)
+        private byte[] GenerateSalt()
         {
-            byte[] salt = new byte[32];
+            byte[] salt = new byte[Size];
             using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
             {
                 rng.GetBytes(salt);
             }
 
-            Salt = Convert.ToBase64String(salt);
-
-            using (Rfc2898DeriveBytes rfc = new Rfc2898DeriveBytes(password, salt, 10000))
-            {
-                Password = Convert.ToBase64String(rfc.GetBytes(32));
-            }
+            return salt;
         }
+
+        private byte[] GenerateHash(string password, byte[] salt) =>
+            new Rfc2898DeriveBytes(password, salt, Iterations).GetBytes(Size);
 
         public static bool IsValidEmail(string email)
         {
@@ -68,10 +78,8 @@ namespace qm95
                 using (var cm = new SQLiteCommand("SELECT 1 FROM customer WHERE email = @email;", connection))
                 {
                     cm.Parameters.AddWithValue("@email", email);
-
                     connection.Open();
-                    var reader = cm.ExecuteScalar();
-                    return reader is null;
+                    return cm.ExecuteScalar() is null;
                 }
             }
             catch
@@ -104,6 +112,45 @@ namespace qm95
             catch (Exception e)
             {
                 return e.Message;
+            }
+        }
+
+        public bool Login()
+        {
+            try
+            {
+                using (var connection = new SQLiteConnection(ConnectionString))
+                using (var cm =
+                    new SQLiteCommand(
+                        "SELECT id_customer, name, lastname, password, salt FROM customer WHERE email = @email;",
+                        connection))
+                {
+                    cm.Parameters.AddWithValue("@email", Email);
+
+                    connection.Open();
+
+                    using (var reader = cm.ExecuteReader())
+                    {
+                        if (!reader.Read()) return false;
+
+                        string password = (string) reader["password"];
+                        Salt = (string) reader["salt"];
+
+                        if (Convert.ToBase64String(GenerateHash(Password, Convert.FromBase64String(Salt))) != password)
+                            return false;
+                        Password = password;
+
+                        IdCustomer = Convert.ToInt32(reader["id_customer"]);
+                        Name = (string) reader["name"];
+                        LastName = (string) reader["lastname"];
+                    }
+
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
     }

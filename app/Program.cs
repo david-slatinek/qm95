@@ -32,8 +32,16 @@ namespace qm95
             string name = ReadLine();
             Write("Your lastname: ");
             string lastName = ReadLine();
-            Write("Email: ");
-            string email = ReadLine();
+
+            string email;
+            while (true)
+            {
+                Write("Email: ");
+                email = ReadLine();
+
+                if (!Customer.IsValidEmail(email)) WriteLine("Invalid email, ty again.");
+                else break;
+            }
 
             string password;
             while (true)

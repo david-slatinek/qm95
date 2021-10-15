@@ -12,7 +12,6 @@ namespace qm95
         public string LastName { get; private set; }
         public string Email { get; private set; }
         public string Password { get; private set; }
-
         public string Salt { get; private set; }
         private static readonly string ConnectionString = "Data Source=db;Cache=Shared;";
 
@@ -58,6 +57,26 @@ namespace qm95
             using (Rfc2898DeriveBytes rfc = new Rfc2898DeriveBytes(password, salt, 10000))
             {
                 Password = Convert.ToBase64String(rfc.GetBytes(32));
+            }
+        }
+
+        public static bool IsValidEmail(string email)
+        {
+            try
+            {
+                using (var connection = new SQLiteConnection(ConnectionString))
+                using (var cm = new SQLiteCommand("SELECT 1 FROM customer WHERE email = @email;", connection))
+                {
+                    cm.Parameters.AddWithValue("@email", email);
+
+                    connection.Open();
+                    var reader = cm.ExecuteScalar();
+                    return reader is null;
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
 

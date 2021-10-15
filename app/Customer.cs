@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Data.SQLite;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 
 namespace qm95
@@ -13,8 +14,9 @@ namespace qm95
         public string Email { get; private set; }
         public string Password { get; private set; }
         public string Salt { get; private set; }
+        public List<Account> Accounts { get; private set; }
 
-        private static readonly string ConnectionString = "Data Source=db;Cache=Shared;";
+        public static readonly string ConnectionString = "Data Source=db;Cache=Shared;";
         private static readonly int Iterations = 10000;
         private static readonly int Size = 32;
 
@@ -33,6 +35,10 @@ namespace qm95
         {
             Email = email;
             Password = password;
+        }
+
+        public Customer()
+        {
         }
 
         private static string EditNameOrLastname(string s)
@@ -145,6 +151,7 @@ namespace qm95
                         LastName = (string) reader["lastname"];
                     }
 
+                    GetAllAccounts();
                     return true;
                 }
             }
@@ -152,6 +159,54 @@ namespace qm95
             {
                 return false;
             }
+        }
+
+        private void GetAllAccounts()
+        {
+            Accounts = new List<Account>();
+            try
+            {
+                using (var connection = new SQLiteConnection(ConnectionString))
+                using (var cm =
+                    new SQLiteCommand(
+                        "SELECT account.id_account, account.opening_date, account.balance, account_type.description " +
+                        "FROM account JOIN account_type ON account.fk_account_type = account_type.id_account_type " +
+                        "WHERE account.fk_customer = @fk_customer AND account.closing_date IS NULL;",
+                        connection))
+                {
+                    cm.Parameters.AddWithValue("@fk_customer", IdCustomer);
+
+                    connection.Open();
+
+                    using (var reader = cm.ExecuteReader())
+                    {
+                        if (!reader.HasRows) return;
+
+                        while (reader.Read())
+                        {
+                            int idAccount = Convert.ToInt32(reader["id_account"]);
+                            DateTime openingDate = Convert.ToDateTime(reader["opening_date"]);
+                            decimal balance = (decimal) reader["balance"];
+                            Accounts.Add(new Account(idAccount, openingDate, balance,
+                                (AccountType) Enum.Parse(typeof(AccountType), (string) reader["description"])));
+                        }
+                    }
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private bool AccountExists(AccountType type) => Accounts.Any(a => a.Type == type);
+
+        public string CreateAccount(AccountType type)
+        {
+            if (AccountExists(type)) return "Account type already exists!";
+            Account account = Account.CreateAccount(type, IdCustomer);
+            if (account is null) return "Error while creating account";
+            Accounts.Add(account);
+            return null;
         }
     }
 }

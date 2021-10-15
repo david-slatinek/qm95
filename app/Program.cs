@@ -5,25 +5,11 @@ namespace qm95
 {
     class Program
     {
-        private static void Help()
-        {
-            WriteLine("Name");
-            WriteLine("\tA private banking system");
-
-            WriteLine("Flags");
-            WriteLine("-h");
-            WriteLine("\tPrint help");
-            WriteLine("-L");
-            WriteLine("\tLogin");
-            WriteLine("-r");
-            WriteLine("\tRegister");
-        }
-
         private static Customer Login()
         {
             Write("Enter email: ");
             string email = ReadLine();
-            
+
             Write("Enter password: ");
             string password = ReadLine();
 
@@ -61,16 +47,45 @@ namespace qm95
             return new Customer(name, lastName, email, password).SaveCustomer();
         }
 
+        private static int CreateAccount()
+        {
+            int account;
+            do
+            {
+                WriteLine("\nChoose an account type: ");
+                foreach (AccountType type in Enum.GetValues(typeof(AccountType)))
+                {
+                    WriteLine($"{Convert.ToInt32(type)} {type}");
+                }
+                Write("Your choice: ");
+                
+                try
+                {
+                    account = Convert.ToInt32(ReadLine());
+                }
+                catch
+                {
+                    account = -1;
+                }
+
+                if (account < 1 || account > Enum.GetValues(typeof(AccountType)).Length)
+                    WriteLine("Invalid option, please try again.\n");
+            } while (account < 1 || account > Enum.GetValues(typeof(AccountType)).Length);
+
+            return account;
+        }
+
         private static void Main()
         {
             Title = "qm95";
 
+            string[] mainOptions = {"1 Register", "2 Login"};
+
             int option = -1;
-            while (option < 1 || option > 3)
+            while (option < 1 || option > mainOptions.Length)
             {
                 WriteLine("Choose an option: ");
-                WriteLine("1 Register");
-                WriteLine("2 Login");
+                foreach (var s in mainOptions) WriteLine(s);
                 Write("Your choice: ");
                 try
                 {
@@ -81,10 +96,12 @@ namespace qm95
                     option = -1;
                 }
 
-                if (option < 1 || option > 3) WriteLine("Invalid option, please try again.\n");
+                if (option < 1 || option > mainOptions.Length) WriteLine("Invalid option, please try again.\n");
             }
 
             WriteLine();
+
+            Customer customer = new Customer();
 
             switch (option)
             {
@@ -96,21 +113,52 @@ namespace qm95
                     break;
 
                 case 2:
-                    if (Login() is null)
+                    if ((customer = Login()) is null)
                     {
                         WriteLine("Invalid email or password!");
                         Environment.Exit(0);
                     }
 
                     break;
-
-                default:
-                    Help();
-                    Environment.Exit(0);
-                    break;
             }
 
-            WriteLine("Login successful!");
+            WriteLine("Login successful!\n\n");
+
+            string[] opt = {"1 Create an account", "2 Exit"};
+
+            while (true)
+            {
+                do
+                {
+                    WriteLine("\nChoose an option: ");
+                    foreach (var s in opt) WriteLine(s);
+                    Write("Your choice: ");
+
+                    try
+                    {
+                        option = Convert.ToInt32(ReadLine());
+                    }
+                    catch
+                    {
+                        option = -1;
+                    }
+
+                    if (option < 1 || option > opt.Length) WriteLine("Invalid option, please try again.\n");
+                } while (option < 1 || option > opt.Length);
+
+                switch (option)
+                {
+                    case 1:
+                        AccountType type = (AccountType) CreateAccount();
+                        string result = customer.CreateAccount(type);
+                        WriteLine(result is null ? "Account was created!" : $"Error: {result}");
+                        break;
+
+                    case 2:
+                        Environment.Exit(0);
+                        break;
+                }
+            }
         }
     }
 }

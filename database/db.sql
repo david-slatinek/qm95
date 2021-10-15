@@ -37,6 +37,6 @@ CREATE TABLE IF NOT EXISTS transfer (
     FOREIGN KEY (fk_transfer_type) REFERENCES transfer_type(id_transfer_type) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
-INSERT INTO account_type (description) VALUES ('checking'), ('savings');
+INSERT INTO account_type (description) VALUES ('Checking'), ('Savings');
 
-INSERT INTO transfer_type (description) VALUES ('deposit'), ('withdraw');
+INSERT INTO transfer_type (description) VALUES ('Deposit'), ('Withdraw');

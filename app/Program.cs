@@ -106,6 +106,58 @@ namespace qm95
             return account;
         }
 
+        private static int GetTransferType()
+        {
+            int transferType;
+            do
+            {
+                WriteLine("\nChoose transfer type: ");
+                foreach (TransferType type in Enum.GetValues(typeof(TransferType)))
+                {
+                    WriteLine($"{Convert.ToInt32(type)} {type}");
+                }
+
+                Write("Your choice: ");
+
+                try
+                {
+                    transferType = Convert.ToInt32(ReadLine());
+                }
+                catch
+                {
+                    transferType = -1;
+                }
+
+                if (transferType < 1 || transferType > Enum.GetValues(typeof(TransferType)).Length)
+                    WriteLine("Invalid option, please try again.\n");
+            } while (transferType < 1 || transferType > Enum.GetValues(typeof(TransferType)).Length);
+
+            return transferType;
+        }
+
+        private static decimal GetAmount(TransferType type, Account account)
+        {
+            decimal amount;
+            do
+            {
+                Write("\nEnter transfer amount: ");
+                try
+                {
+                    amount = Convert.ToDecimal(ReadLine());
+                }
+                catch
+                {
+                    amount = -1;
+                }
+
+                if (amount < 1) WriteLine("Minimum amount is 1, please try again.\n");
+                if (type == TransferType.Withdraw && account.Balance - amount < (decimal) 0.0)
+                    WriteLine("Not enough money, please try again.\n");
+            } while (amount < 1 || type == TransferType.Withdraw && account.Balance - amount < (decimal) 0.0);
+
+            return amount;
+        }
+
         private static void Main()
         {
             Title = "qm95";
@@ -156,7 +208,8 @@ namespace qm95
 
             WriteLine("Login successful!\n\n");
 
-            string[] opt = {"1 Create an account", "2 Close an account", "3 View all accounts", "4 Exit"};
+            string[] opt =
+                {"1 Create an account", "2 Close an account", "3 View all accounts", "4 Create a transfer", "5 Exit"};
 
             while (true)
             {
@@ -214,8 +267,21 @@ namespace qm95
                         break;
 
                     case 4:
-                        Environment.Exit(0);
+                        int index = GetAccountIndex(customer.Accounts);
+                        TransferType transferType = (TransferType) GetTransferType();
+                        if (transferType == TransferType.Withdraw && customer.Accounts[index].Balance < 1)
+                        {
+                            WriteLine("Not enough money!");
+                            break;
+                        }
+
+                        decimal amount = GetAmount(transferType, customer.Accounts[index]);
+                        result = customer.Accounts[index].MakeTransfer(amount, transferType);
+                        WriteLine(result is null ? "Transfer was completed!" : $"Error: {result}");
                         break;
+
+                    case 5:
+                        return;
                 }
             }
         }

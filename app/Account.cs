@@ -1,5 +1,6 @@
 using System;
 using System.Data.SQLite;
+using System.Collections.Generic;
 
 namespace qm95
 {
@@ -9,6 +10,7 @@ namespace qm95
         public DateTime OpeningDate { get; private set; }
         public decimal Balance { get; private set; }
         public AccountType Type { get; private set; }
+        public List<Transfer> Transfers { get; private set; }
 
         public Account(int idAccount, DateTime openingDate, decimal balance, AccountType type)
         {
@@ -16,6 +18,7 @@ namespace qm95
             OpeningDate = openingDate;
             Balance = balance;
             Type = type;
+            Transfers = Transfer.GetTransfers(IdAccount);
         }
 
         public static Account CreateAccount(AccountType type, int idCustomer)
@@ -64,6 +67,42 @@ namespace qm95
             {
                 return e.ToString();
             }
+        }
+
+        private string UpdateBalance(decimal amount, TransferType type)
+        {
+            if (type == TransferType.Withdraw) amount *= -1;
+            Balance += amount;
+
+            try
+            {
+                using var connection = new SQLiteConnection(Customer.ConnectionString);
+                using var cm =
+                    new SQLiteCommand("UPDATE account SET balance = @balance WHERE fk_customer = @fk_customer;",
+                        connection);
+                cm.Parameters.AddWithValue("@balance", Balance);
+                cm.Parameters.AddWithValue("@fk_customer", IdAccount);
+
+                connection.Open();
+                cm.ExecuteScalar();
+                return null;
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
+        }
+
+        public string MakeTransfer(decimal amount, TransferType type)
+        {
+            Transfer transfer = new Transfer(amount, type);
+            string result = transfer.MakeTransfer(IdAccount);
+            if (result is not null) return result;
+
+            result = UpdateBalance(amount, type);
+            if (result is not null) transfer.RevertTransaction();
+
+            return result;
         }
     }
 }

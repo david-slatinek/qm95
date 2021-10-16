@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS transfer_type (
 );
 
 CREATE TABLE IF NOT EXISTS transfer (
+    id_transfer INTEGER PRIMARY KEY,
     amount DECIMAL(8, 2) NOT NULL,
     transfer_date DATE NOT NULL,
     fk_account INTEGER NOT NULL,

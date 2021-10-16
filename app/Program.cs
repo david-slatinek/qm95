@@ -156,11 +156,10 @@ namespace qm95
 
             WriteLine("Login successful!\n\n");
 
-            string[] opt = {"1 Create an account", "2 Close an account", "3 Exit"};
-            
+            string[] opt = {"1 Create an account", "2 Close an account", "3 View all accounts", "4 Exit"};
+
             while (true)
             {
-                result = null;
                 do
                 {
                     WriteLine("\nChoose an option: ");
@@ -193,11 +192,28 @@ namespace qm95
                             WriteLine("No accounts!");
                             break;
                         }
+
                         result = customer.CloseAccount(GetAccountIndex(customer.Accounts));
                         WriteLine(result is null ? "Account was deleted!" : $"Error: {result}");
                         break;
 
                     case 3:
+                        if (customer.Accounts.Count == 0)
+                        {
+                            WriteLine("No accounts!");
+                            break;
+                        }
+
+                        WriteLine("Type || Balance || Opening date");
+                        foreach (var account in customer.Accounts)
+                        {
+                            WriteLine("{0,-5} || {1:C} || {2:yyyy-MM-dd}", account.Type, account.Balance,
+                                account.OpeningDate);
+                        }
+
+                        break;
+
+                    case 4:
                         Environment.Exit(0);
                         break;
                 }

@@ -208,5 +208,12 @@ namespace qm95
             Accounts.Add(account);
             return null;
         }
+
+        public string CloseAccount(int index)
+        {
+            string result = Accounts[index].CloseAccount(IdCustomer);
+            if (result is null) Accounts.RemoveAt(index);
+            return result;
+        }
     }
 }

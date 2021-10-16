@@ -29,7 +29,6 @@ namespace qm95
                         connection))
                 {
                     cm.Parameters.AddWithValue("@opening_date", DateTime.Now.ToString("yyyy-MM-dd"));
-                    Console.WriteLine((int) type);
                     cm.Parameters.AddWithValue("@fk_account_type", (int) type);
                     cm.Parameters.AddWithValue("@fk_customer", idCustomer);
 
@@ -41,6 +40,29 @@ namespace qm95
             catch
             {
                 return null;
+            }
+        }
+
+        public string CloseAccount(int idCustomer)
+        {
+            try
+            {
+                using var connection = new SQLiteConnection(Customer.ConnectionString);
+                using var cm = new SQLiteCommand(
+                    "UPDATE account SET closing_date = @closing_date WHERE fk_account_type = @fk_account_type "
+                    + "AND fk_customer = @fk_customer;", connection);
+
+                cm.Parameters.AddWithValue("@closing_date", DateTime.Now.ToString("yyyy-MM-dd"));
+                cm.Parameters.AddWithValue("@fk_account_type", (int) Type);
+                cm.Parameters.AddWithValue("@fk_customer", idCustomer);
+
+                connection.Open();
+                cm.ExecuteNonQuery();
+                return null;
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using static System.Console;
 
 namespace qm95
@@ -57,8 +58,9 @@ namespace qm95
                 {
                     WriteLine($"{Convert.ToInt32(type)} {type}");
                 }
+
                 Write("Your choice: ");
-                
+
                 try
                 {
                     account = Convert.ToInt32(ReadLine());
@@ -71,6 +73,35 @@ namespace qm95
                 if (account < 1 || account > Enum.GetValues(typeof(AccountType)).Length)
                     WriteLine("Invalid option, please try again.\n");
             } while (account < 1 || account > Enum.GetValues(typeof(AccountType)).Length);
+
+            return account;
+        }
+
+        private static int GetAccountIndex(IReadOnlyList<Account> accounts)
+        {
+            int account;
+            do
+            {
+                WriteLine("\nChoose an account: ");
+                for (int i = 0; i < accounts.Count; i++)
+                {
+                    WriteLine($"{i} {accounts[i].Type}");
+                }
+
+                Write("Your choice: ");
+
+                try
+                {
+                    account = Convert.ToInt32(ReadLine());
+                }
+                catch
+                {
+                    account = -1;
+                }
+
+                if (account < 0 || account >= accounts.Count)
+                    WriteLine("Invalid option, please try again.\n");
+            } while (account < 0 || account >= accounts.Count);
 
             return account;
         }
@@ -103,10 +134,11 @@ namespace qm95
 
             Customer customer = new Customer();
 
+            string result;
             switch (option)
             {
                 case 1:
-                    string result = Register();
+                    result = Register();
                     if (string.IsNullOrEmpty(result)) WriteLine("Registration was successful!");
                     else WriteLine($"Error:{result}");
                     Environment.Exit(0);
@@ -124,10 +156,11 @@ namespace qm95
 
             WriteLine("Login successful!\n\n");
 
-            string[] opt = {"1 Create an account", "2 Exit"};
-
+            string[] opt = {"1 Create an account", "2 Close an account", "3 Exit"};
+            
             while (true)
             {
+                result = null;
                 do
                 {
                     WriteLine("\nChoose an option: ");
@@ -150,11 +183,21 @@ namespace qm95
                 {
                     case 1:
                         AccountType type = (AccountType) CreateAccount();
-                        string result = customer.CreateAccount(type);
+                        result = customer.CreateAccount(type);
                         WriteLine(result is null ? "Account was created!" : $"Error: {result}");
                         break;
 
                     case 2:
+                        if (customer.Accounts.Count == 0)
+                        {
+                            WriteLine("No accounts!");
+                            break;
+                        }
+                        result = customer.CloseAccount(GetAccountIndex(customer.Accounts));
+                        WriteLine(result is null ? "Account was deleted!" : $"Error: {result}");
+                        break;
+
+                    case 3:
                         Environment.Exit(0);
                         break;
                 }

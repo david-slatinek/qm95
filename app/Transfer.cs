@@ -6,10 +6,10 @@ namespace qm95
 {
     public class Transfer : ITransfer
     {
-        public int IdTransfer { get; private set; }
-        public decimal Amount { get; private set; }
-        public DateTime TransferDate { get; private set; }
-        public TransferType Type { get; private set; }
+        private int IdTransfer { get; set; }
+        public decimal Amount { get; }
+        public DateTime TransferDate { get; }
+        public TransferType Type { get; }
 
         private Transfer(int idTransfer, decimal amount, DateTime transferDate, TransferType type)
         {
@@ -55,9 +55,8 @@ namespace qm95
                         (TransferType) Enum.Parse(typeof(TransferType), (string) reader["description"])));
                 }
             }
-            catch (Exception e)
+            catch
             {
-                Console.WriteLine(e);
             }
 
             return transfers;

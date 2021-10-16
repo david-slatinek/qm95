@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using static System.Console;
+using System.Collections.Generic;
 
 namespace qm95
 {
@@ -60,7 +60,6 @@ namespace qm95
                 }
 
                 Write("Your choice: ");
-
                 try
                 {
                     account = Convert.ToInt32(ReadLine());
@@ -89,7 +88,6 @@ namespace qm95
                 }
 
                 Write("Your choice: ");
-
                 try
                 {
                     account = Convert.ToInt32(ReadLine());
@@ -118,7 +116,6 @@ namespace qm95
                 }
 
                 Write("Your choice: ");
-
                 try
                 {
                     transferType = Convert.ToInt32(ReadLine());
@@ -169,6 +166,7 @@ namespace qm95
             {
                 WriteLine("Choose an option: ");
                 foreach (var s in mainOptions) WriteLine(s);
+
                 Write("Your choice: ");
                 try
                 {
@@ -191,8 +189,7 @@ namespace qm95
             {
                 case 1:
                     result = Register();
-                    if (string.IsNullOrEmpty(result)) WriteLine("Registration was successful!");
-                    else WriteLine($"Error:{result}");
+                    WriteLine(string.IsNullOrEmpty(result) ? "Registration was successful!" : $"Error:{result}");
                     Environment.Exit(0);
                     break;
 
@@ -221,8 +218,8 @@ namespace qm95
                 {
                     WriteLine("\nChoose an option: ");
                     foreach (var s in opt) WriteLine(s);
-                    Write("Your choice: ");
 
+                    Write("Your choice: ");
                     try
                     {
                         option = Convert.ToInt32(ReadLine());
@@ -267,7 +264,6 @@ namespace qm95
                             WriteLine("{0,-5} || {1:C} || {2:yyyy-MM-dd}", account.Type, account.Balance,
                                 account.OpeningDate);
                         }
-
                         break;
 
                     case 4:

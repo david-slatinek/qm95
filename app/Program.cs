@@ -209,8 +209,12 @@ namespace qm95
             WriteLine("Login successful!\n\n");
 
             string[] opt =
-                {"1 Create an account", "2 Close an account", "3 View all accounts", "4 Create a transfer", "5 Exit"};
+            {
+                "1 Create an account", "2 Close an account", "3 View all accounts", "4 Create a transfer",
+                "5 View account transfers", "6 Exit"
+            };
 
+            int index;
             while (true)
             {
                 do
@@ -267,7 +271,7 @@ namespace qm95
                         break;
 
                     case 4:
-                        int index = GetAccountIndex(customer.Accounts);
+                        index = GetAccountIndex(customer.Accounts);
                         TransferType transferType = (TransferType) GetTransferType();
                         if (transferType == TransferType.Withdraw && customer.Accounts[index].Balance < 1)
                         {
@@ -281,6 +285,23 @@ namespace qm95
                         break;
 
                     case 5:
+                        if (customer.Accounts.Count == 0)
+                        {
+                            WriteLine("No accounts!");
+                            break;
+                        }
+
+                        index = GetAccountIndex(customer.Accounts);
+
+                        WriteLine("Amount || Date || Type");
+                        foreach (var transfer in customer.Accounts[index].Transfers)
+                        {
+                            WriteLine("{0:C} || {1:yyyy-MM-dd HH:mm} || {2}", transfer.Amount, transfer.TransferDate,
+                                transfer.Type);
+                        }
+
+                        break;
+                    case 6:
                         return;
                 }
             }

@@ -22,7 +22,7 @@ namespace qm95
         public Transfer(decimal amount, TransferType type)
         {
             Amount = amount;
-            TransferDate = DateTime.Today;
+            TransferDate = DateTime.Now;
             Type = type;
         }
 
@@ -73,7 +73,7 @@ namespace qm95
                                       "VALUES (@amount, @transfer_date, @fk_account, @fk_transfer_type) RETURNING id_transfer;",
                         connection);
                 cm.Parameters.AddWithValue("@amount", Amount);
-                cm.Parameters.AddWithValue("@transfer_date", TransferDate.ToString("yyyy-MM-dd"));
+                cm.Parameters.AddWithValue("@transfer_date", TransferDate);
                 cm.Parameters.AddWithValue("@fk_account", idAccount);
                 cm.Parameters.AddWithValue("@fk_transfer_type", (int) Type);
 
